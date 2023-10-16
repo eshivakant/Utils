@@ -1,0 +1,23 @@
+powershell
+# Set source and target directories
+$source = "C:\SourceDirectory"
+$target = "C:\TargetDirectory"
+
+# Get all files in the source directory
+$files = Get-ChildItem $source -Recurse
+
+# Loop through each file
+foreach ($file in $files) {
+    # Check if the file exists in the target directory
+    $targetFile = Join-Path $target $file.Name
+    if (Test-Path $targetFile) {
+        # Check if the file in the source directory is newer than the one in the target directory
+        if ($file.LastWriteTime -gt (Get-Item $targetFile).LastWriteTime) {
+            # Copy the file to the target directory
+            Copy-Item $file.FullName $target -Force
+        }
+    } else {
+        # Copy the file to the target directory since it doesn't exist there
+        Copy-Item $file.FullName $target -Force
+    }
+}
