@@ -1,0 +1,8 @@
+graph TD
+    A[User] -->|1. Accesses external URL| B[Azure AD]
+    B -->|2. Authenticates user| C[Azure AD Application Proxy]
+    C -->|3. Forwards request to App Proxy Connector| D[App Proxy Connector]
+    D -->|4. Forwards request to on-premises application| E[On-premises Application]
+    E -->|5. Responds back through App Proxy Connector| D
+    D -->|6. Forwards response to Azure AD Application Proxy| C
+    C -->|7. Sends response to user| A
