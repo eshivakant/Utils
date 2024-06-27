@@ -1,0 +1,6 @@
+flowchart TD
+    A[Start] --> B[Decide on the layout of the new Template]
+    B --> C[Define a new template in the Template table along with the JSON template definition]
+    C --> D[Map widgets to this template in 'TemplateWidget' table]
+    D --> E[Deploy DB changes]
+    E --> F[End]
