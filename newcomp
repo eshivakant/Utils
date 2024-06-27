@@ -1,0 +1,6 @@
+flowchart TD
+    A[Start] --> B[Declare the new component in WidgetComponent table]
+    B --> C[Think about the structure of the component and define a C# class MyCustomComponentDto.cs]
+    C --> D[Define the widget in the Widget table using the JSON of the component defined above]
+    D --> E[Write Angular components and form builder]
+    E --> F[End]
