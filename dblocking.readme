@@ -1,0 +1,95 @@
+In SQL Server, when a table is locked by a transaction and you want to find out which transaction is holding the lock, you can use several system views and dynamic management views (DMVs). Here's a step-by-step guide to find which transaction is locking your table:
+
+1. Identify the session holding the lock using sys.dm_tran_locks
+This DMV will show all locks currently being held in the system. To identify the transaction locking your table, you can run the following query:
+
+sql
+Copy code
+SELECT 
+    tl.resource_type,
+    tl.resource_database_id,
+    DB_NAME(tl.resource_database_id) AS DatabaseName,
+    tl.resource_associated_entity_id AS ObjectID,
+    OBJECT_NAME(tl.resource_associated_entity_id, tl.resource_database_id) AS ObjectName,
+    tl.request_mode,
+    tl.request_status,
+    tl.request_session_id
+FROM 
+    sys.dm_tran_locks AS tl
+WHERE 
+    tl.resource_type = 'OBJECT'
+    AND OBJECT_NAME(tl.resource_associated_entity_id, tl.resource_database_id) = 'YourTableName';
+Replace 'YourTableName' with the actual table name you are investigating.
+
+request_session_id: The session ID that is holding or requesting the lock.
+request_mode: The type of lock (e.g., S for shared, X for exclusive).
+request_status: Indicates whether the request is GRANTED or WAIT.
+2. Find details about the blocking session using sys.dm_exec_sessions
+Once you have the request_session_id from the previous step, you can get more information about the session holding the lock by querying sys.dm_exec_sessions:
+
+sql
+Copy code
+SELECT 
+    s.session_id,
+    s.login_name,
+    s.host_name,
+    s.program_name,
+    s.status,
+    s.cpu_time,
+    s.memory_usage,
+    s.reads,
+    s.writes,
+    s.blocking_session_id,
+    r.start_time,
+    r.command,
+    r.sql_handle,
+    r.statement_start_offset,
+    r.statement_end_offset
+FROM 
+    sys.dm_exec_sessions s
+JOIN 
+    sys.dm_exec_requests r
+    ON s.session_id = r.session_id
+WHERE 
+    s.session_id = <YourSessionID>;
+Replace <YourSessionID> with the session ID you identified from the first query.
+
+This query will give you details such as:
+
+blocking_session_id: If the session is being blocked by another session, this column will show the blocking session’s ID.
+sql_handle: You can use this to extract the exact query that is running.
+3. Retrieve the exact query causing the lock using sys.dm_exec_sql_text
+Once you have the sql_handle from the previous query, you can retrieve the query text using:
+
+sql
+Copy code
+SELECT 
+    TEXT
+FROM 
+    sys.dm_exec_sql_text(<sql_handle>);
+Replace <sql_handle> with the handle you obtained in step 2.
+
+4. Identify blocking chain using sys.dm_exec_requests
+If you want to check if the session holding the lock is being blocked by another session, you can run the following query to find the blocking chain:
+
+sql
+Copy code
+SELECT
+    r.blocking_session_id AS BlockingSession,
+    r.session_id AS BlockedSession,
+    r.wait_type,
+    r.wait_time,
+    r.wait_resource,
+    r.transaction_isolation_level,
+    r.command
+FROM
+    sys.dm_exec_requests r
+WHERE
+    r.blocking_session_id <> 0;
+This query will show all sessions that are currently being blocked, along with the blocking_session_id.
+
+Summary:
+Use sys.dm_tran_locks to identify the session holding the lock.
+Use sys.dm_exec_sessions and sys.dm_exec_requests to get session details and the query being executed.
+Use sys.dm_exec_sql_text to find the exact SQL statement causing the lock.
+This process should help you identify the transaction causing the lock on your table in SQL Server.
