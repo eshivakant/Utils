@@ -1,0 +1,89 @@
+<mat-card class="compact-card">
+  <div fxLayout="row wrap" fxLayoutGap="10px" fxLayoutAlign="start center">
+    <mat-form-field appearance="outline" class="compact-field">
+      <mat-label>Issuer Short Name</mat-label>
+      <input matInput placeholder="ANTA" disabled />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="compact-field">
+      <mat-label>Ultimate Issuer</mat-label>
+      <input matInput placeholder="Anta International Group Holdings Ltd" disabled />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="compact-field">
+      <mat-label>Issuer Code</mat-label>
+      <input matInput placeholder="18145157" disabled />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="compact-field">
+      <mat-label>LEI</mat-label>
+      <input matInput disabled />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="compact-field">
+      <mat-label>ISIN</mat-label>
+      <input matInput disabled />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="compact-field">
+      <mat-label>Ultimate Issuer Equity Ticker</mat-label>
+      <input matInput disabled />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="compact-field">
+      <mat-label>Ultimate Issuer Bond Ticker</mat-label>
+      <input matInput disabled />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="compact-field">
+      <mat-label>Country Of Risk</mat-label>
+      <input matInput placeholder="China" disabled />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="compact-field">
+      <mat-label>Moody's</mat-label>
+      <input matInput placeholder="NR" disabled />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="compact-field">
+      <mat-label>S&P</mat-label>
+      <input matInput placeholder="NR" disabled />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="compact-field">
+      <mat-label>Fitch</mat-label>
+      <input matInput placeholder="NR" disabled />
+    </mat-form-field>
+  </div>
+  
+  <div fxLayout="row" fxLayoutAlign="start center" class="button-row">
+    <button mat-raised-button color="primary">Select Issuer</button>
+    <button mat-flat-button color="warn" class="compact-icon-button">
+      <mat-icon>error_outline</mat-icon>
+      Report Issuer Data Error
+    </button>
+  </div>
+</mat-card>
+
+
+
+.compact-card {
+  padding: 10px;
+}
+
+.label-value-pair {
+  display: flex;
+  flex-direction: column;
+  margin-right: 20px;
+  margin-bottom: 10px;
+  width: 200px; /* You can adjust this width */
+}
+
+.label {
+  font-weight: 600;
+  font-size: 12px;
+  color: #757575;
+}
+
+.value {
+  font-size: 14px;
+}
+
+.button-row {
+  margin-top: 10px;
+}
+
+button.compact-icon-button mat-icon {
+  font-size: 16px;
+  margin-right: 5px;
+}
