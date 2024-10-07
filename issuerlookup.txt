@@ -1,51 +1,51 @@
 <mat-card class="compact-card">
   <div fxLayout="row wrap" fxLayoutGap="10px" fxLayoutAlign="start center">
-    <mat-form-field appearance="outline" class="compact-field">
-      <mat-label>Issuer Short Name</mat-label>
-      <input matInput placeholder="ANTA" disabled />
-    </mat-form-field>
-    <mat-form-field appearance="outline" class="compact-field">
-      <mat-label>Ultimate Issuer</mat-label>
-      <input matInput placeholder="Anta International Group Holdings Ltd" disabled />
-    </mat-form-field>
-    <mat-form-field appearance="outline" class="compact-field">
-      <mat-label>Issuer Code</mat-label>
-      <input matInput placeholder="18145157" disabled />
-    </mat-form-field>
-    <mat-form-field appearance="outline" class="compact-field">
-      <mat-label>LEI</mat-label>
-      <input matInput disabled />
-    </mat-form-field>
-    <mat-form-field appearance="outline" class="compact-field">
-      <mat-label>ISIN</mat-label>
-      <input matInput disabled />
-    </mat-form-field>
-    <mat-form-field appearance="outline" class="compact-field">
-      <mat-label>Ultimate Issuer Equity Ticker</mat-label>
-      <input matInput disabled />
-    </mat-form-field>
-    <mat-form-field appearance="outline" class="compact-field">
-      <mat-label>Ultimate Issuer Bond Ticker</mat-label>
-      <input matInput disabled />
-    </mat-form-field>
-    <mat-form-field appearance="outline" class="compact-field">
-      <mat-label>Country Of Risk</mat-label>
-      <input matInput placeholder="China" disabled />
-    </mat-form-field>
-    <mat-form-field appearance="outline" class="compact-field">
-      <mat-label>Moody's</mat-label>
-      <input matInput placeholder="NR" disabled />
-    </mat-form-field>
-    <mat-form-field appearance="outline" class="compact-field">
-      <mat-label>S&P</mat-label>
-      <input matInput placeholder="NR" disabled />
-    </mat-form-field>
-    <mat-form-field appearance="outline" class="compact-field">
-      <mat-label>Fitch</mat-label>
-      <input matInput placeholder="NR" disabled />
-    </mat-form-field>
+    <div class="label-value-pair">
+      <span class="label">Issuer Short Name:</span>
+      <span class="value">ANTA</span>
+    </div>
+    <div class="label-value-pair">
+      <span class="label">Ultimate Issuer:</span>
+      <span class="value">Anta International Group Holdings Ltd</span>
+    </div>
+    <div class="label-value-pair">
+      <span class="label">Issuer Code:</span>
+      <span class="value">18145157</span>
+    </div>
+    <div class="label-value-pair">
+      <span class="label">LEI:</span>
+      <span class="value">-</span>
+    </div>
+    <div class="label-value-pair">
+      <span class="label">ISIN:</span>
+      <span class="value">-</span>
+    </div>
+    <div class="label-value-pair">
+      <span class="label">Ultimate Issuer Equity Ticker:</span>
+      <span class="value">-</span>
+    </div>
+    <div class="label-value-pair">
+      <span class="label">Ultimate Issuer Bond Ticker:</span>
+      <span class="value">-</span>
+    </div>
+    <div class="label-value-pair">
+      <span class="label">Country Of Risk:</span>
+      <span class="value">China</span>
+    </div>
+    <div class="label-value-pair">
+      <span class="label">Moody's:</span>
+      <span class="value">NR</span>
+    </div>
+    <div class="label-value-pair">
+      <span class="label">S&P:</span>
+      <span class="value">NR</span>
+    </div>
+    <div class="label-value-pair">
+      <span class="label">Fitch:</span>
+      <span class="value">NR</span>
+    </div>
   </div>
-  
+
   <div fxLayout="row" fxLayoutAlign="start center" class="button-row">
     <button mat-raised-button color="primary">Select Issuer</button>
     <button mat-flat-button color="warn" class="compact-icon-button">
@@ -54,7 +54,6 @@
     </button>
   </div>
 </mat-card>
-
 
 
 .compact-card {
