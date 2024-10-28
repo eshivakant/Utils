@@ -1,0 +1,75 @@
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
+using ClosedXML.Excel;
+using System.IO;
+
+class Program
+{
+    static async Task Main(string[] args)
+    {
+        // Define file paths
+        string inputFilePath = "input_file.xlsx";
+        string outputFilePath = "output_file.xlsx";
+        
+        // Define the API endpoint
+        string url = "https://example.com/api/process"; // Replace with your actual endpoint
+
+        // Check if the file exists
+        if (!File.Exists(inputFilePath))
+        {
+            Console.WriteLine("Input file not found.");
+            return;
+        }
+
+        // Initialize HttpClient for sending HTTP requests
+        using (var client = new HttpClient())
+        {
+            // Open the Excel workbook
+            using (var workbook = new XLWorkbook(inputFilePath))
+            {
+                var worksheet = workbook.Worksheet(1);
+                
+                // Read column A and process each cell
+                int row = 1;
+                while (!worksheet.Cell(row, 1).IsEmpty())
+                {
+                    string cellValue = worksheet.Cell(row, 1).GetString();
+                    string responseText = await SendDataToApi(client, url, cellValue);
+
+                    // Write the API response to column B
+                    worksheet.Cell(row, 2).Value = responseText;
+                    row++;
+                }
+
+                // Save the modified workbook to a new file
+                workbook.SaveAs(outputFilePath);
+                Console.WriteLine($"Processed file saved as {outputFilePath}");
+            }
+        }
+    }
+
+    // Method to send data to the API endpoint and get the response
+    static async Task<string> SendDataToApi(HttpClient client, string url, string text)
+    {
+        var content = new FormUrlEncodedContent(new[] { new KeyValuePair<string, string>("text", text) });
+
+        try
+        {
+            var response = await client.PostAsync(url, content);
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadAsStringAsync();
+            }
+            else
+            {
+                return "Error: " + response.StatusCode;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error sending request: {ex.Message}");
+            return "Error";
+        }
+    }
+}
