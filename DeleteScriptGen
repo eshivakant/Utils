@@ -1,58 +1,134 @@
+using Microsoft.SqlServer.Management.Common;
+using Microsoft.SqlServer.Management.Smo;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.SqlServer.Management.Smo;
-using Microsoft.SqlServer.Management.Common;
 
 public class DeleteScriptGenerator
 {
-    private readonly Server _server;
-    private readonly Database _database;
+    private readonly string _serverName;
+    private readonly string _databaseName;
+    private readonly HashSet<string> _processedTables;
+    private readonly StringBuilder _deleteScript;
 
     public DeleteScriptGenerator(string serverName, string databaseName)
     {
-        _server = new Server(new ServerConnection(serverName));
-        _database = _server.Databases[databaseName];
+        _serverName = serverName;
+        _databaseName = databaseName;
+        _processedTables = new HashSet<string>();
+        _deleteScript = new StringBuilder();
     }
 
-    public string GenerateDeleteScript(string tableName, string keyColumn, object keyValue)
+    public string GenerateDeleteScript(string tableName, string keyColumnName, string keyValue)
     {
-        var deleteScripts = new StringBuilder();
-
-        if (_database.Tables.Contains(tableName))
+        try
         {
-            var table = _database.Tables[tableName];
+            _processedTables.Clear();
+            _deleteScript.Clear();
 
-            // Traverse dependencies and generate delete scripts for related rows
-            TraverseDependencies(table, keyColumn, keyValue, deleteScripts);
+            var server = new Server(_serverName);
+            var database = server.Databases[_databaseName];
 
-            // Generate delete script for the main row
-            deleteScripts.AppendLine($"DELETE FROM {tableName} WHERE {keyColumn} = '{keyValue}';");
+            if (database == null)
+                throw new Exception($"Database '{_databaseName}' not found.");
+
+            var table = database.Tables[tableName];
+            if (table == null)
+                throw new Exception($"Table '{tableName}' not found.");
+
+            // Start transaction
+            _deleteScript.AppendLine("BEGIN TRANSACTION;");
+            _deleteScript.AppendLine("BEGIN TRY");
+
+            // Generate delete statements recursively
+            GenerateDeleteStatements(table, keyColumnName, keyValue, database);
+
+            // Add commit and rollback handling
+            _deleteScript.AppendLine("    COMMIT TRANSACTION;");
+            _deleteScript.AppendLine("END TRY");
+            _deleteScript.AppendLine("BEGIN CATCH");
+            _deleteScript.AppendLine("    ROLLBACK TRANSACTION;");
+            _deleteScript.AppendLine("    THROW;");
+            _deleteScript.AppendLine("END CATCH");
+
+            return _deleteScript.ToString();
         }
-        else
+        catch (Exception ex)
         {
-            throw new ArgumentException($"Table {tableName} does not exist in the database.");
+            throw new Exception($"Error generating delete script: {ex.Message}", ex);
         }
-
-        return deleteScripts.ToString();
     }
 
-    private void TraverseDependencies(Table table, string keyColumn, object keyValue, StringBuilder deleteScripts)
+    private void GenerateDeleteStatements(Table table, string keyColumnName, string keyValue, Database database)
     {
-        foreach (ForeignKey foreignKey in table.ForeignKeys)
+        var tableName = GetFullTableName(table);
+        
+        // Prevent circular references
+        if (_processedTables.Contains(tableName))
+            return;
+
+        _processedTables.Add(tableName);
+
+        // Process child tables first (tables that have foreign keys referencing this table)
+        foreach (var childTable in GetReferencingTables(table, database))
         {
-            var dependentTable = _database.Tables[foreignKey.Parent.Table];
-
-            // Skip if the table or foreign key is not valid
-            if (dependentTable == null || !dependentTable.ForeignKeys.Contains(foreignKey.Name)) continue;
-
-            var dependentKeyColumn = foreignKey.Columns[0].Name;
-            
-            // Generate delete script for dependent table
-            deleteScripts.AppendLine($"DELETE FROM {dependentTable.Name} WHERE {dependentKeyColumn} = '{keyValue}';");
-
-            // Recursively traverse dependencies of the dependent table
-            TraverseDependencies(dependentTable, dependentKeyColumn, keyValue, deleteScripts);
+            var foreignKey = GetForeignKeyToParent(childTable, table);
+            if (foreignKey != null)
+            {
+                var childKeyColumn = foreignKey.Columns[0].Name; // Assuming single-column foreign key
+                GenerateDeleteStatements(childTable, childKeyColumn, keyValue, database);
+            }
         }
+
+        // Generate delete statement for current table
+        _deleteScript.AppendLine($"    DELETE FROM {tableName}");
+        _deleteScript.AppendLine($"    WHERE {keyColumnName} = {FormatKeyValue(keyValue)};");
+    }
+
+    private string GetFullTableName(Table table)
+    {
+        return $"[{table.Schema}].[{table.Name}]";
+    }
+
+    private IEnumerable<Table> GetReferencingTables(Table parentTable, Database database)
+    {
+        var referencingTables = new List<Table>();
+
+        foreach (var table in database.Tables)
+        {
+            if (!table.IsSystemObject)
+            {
+                foreach (var fk in table.ForeignKeys)
+                {
+                    if (fk.ReferencedTable == parentTable.Name && fk.ReferencedTableSchema == parentTable.Schema)
+                    {
+                        referencingTables.Add(table);
+                        break;
+                    }
+                }
+            }
+        }
+
+        return referencingTables;
+    }
+
+    private ForeignKey GetForeignKeyToParent(Table childTable, Table parentTable)
+    {
+        foreach (var fk in childTable.ForeignKeys)
+        {
+            if (fk.ReferencedTable == parentTable.Name && fk.ReferencedTableSchema == parentTable.Schema)
+            {
+                return fk;
+            }
+        }
+        return null;
+    }
+
+    private string FormatKeyValue(string keyValue)
+    {
+        // Basic handling - you might want to enhance this based on your needs
+        if (int.TryParse(keyValue, out _) || long.TryParse(keyValue, out _))
+            return keyValue;
+        return $"'{keyValue.Replace("'", "''")}'";
     }
 }
