@@ -96,7 +96,8 @@ public class DeleteScriptGenerator
 
         foreach (var table in database.Tables)
         {
-            if (!table.IsSystemObject)
+            // Check if it's not a system table
+            if (table.Properties["TableType"].ToString() != "SystemObject")
             {
                 foreach (var fk in table.ForeignKeys)
                 {
