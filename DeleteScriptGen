@@ -96,16 +96,16 @@ public class DeleteScriptGenerator
 
         foreach (var table in database.Tables)
         {
-            // Check if it's not a system table
-            if (table.Properties["TableType"].ToString() != "SystemObject")
+            // Skip system tables (those in sys schema)
+            if (string.Equals(table.Schema, "sys", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            foreach (var fk in table.ForeignKeys)
             {
-                foreach (var fk in table.ForeignKeys)
+                if (fk.ReferencedTable == parentTable.Name && fk.ReferencedTableSchema == parentTable.Schema)
                 {
-                    if (fk.ReferencedTable == parentTable.Name && fk.ReferencedTableSchema == parentTable.Schema)
-                    {
-                        referencingTables.Add(table);
-                        break;
-                    }
+                    referencingTables.Add(table);
+                    break;
                 }
             }
         }
