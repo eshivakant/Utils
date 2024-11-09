@@ -1,0 +1,58 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+using Microsoft.SqlServer.Management.Smo;
+using Microsoft.SqlServer.Management.Common;
+
+public class DeleteScriptGenerator
+{
+    private readonly Server _server;
+    private readonly Database _database;
+
+    public DeleteScriptGenerator(string serverName, string databaseName)
+    {
+        _server = new Server(new ServerConnection(serverName));
+        _database = _server.Databases[databaseName];
+    }
+
+    public string GenerateDeleteScript(string tableName, string keyColumn, object keyValue)
+    {
+        var deleteScripts = new StringBuilder();
+
+        if (_database.Tables.Contains(tableName))
+        {
+            var table = _database.Tables[tableName];
+
+            // Traverse dependencies and generate delete scripts for related rows
+            TraverseDependencies(table, keyColumn, keyValue, deleteScripts);
+
+            // Generate delete script for the main row
+            deleteScripts.AppendLine($"DELETE FROM {tableName} WHERE {keyColumn} = '{keyValue}';");
+        }
+        else
+        {
+            throw new ArgumentException($"Table {tableName} does not exist in the database.");
+        }
+
+        return deleteScripts.ToString();
+    }
+
+    private void TraverseDependencies(Table table, string keyColumn, object keyValue, StringBuilder deleteScripts)
+    {
+        foreach (ForeignKey foreignKey in table.ForeignKeys)
+        {
+            var dependentTable = _database.Tables[foreignKey.Parent.Table];
+
+            // Skip if the table or foreign key is not valid
+            if (dependentTable == null || !dependentTable.ForeignKeys.Contains(foreignKey.Name)) continue;
+
+            var dependentKeyColumn = foreignKey.Columns[0].Name;
+            
+            // Generate delete script for dependent table
+            deleteScripts.AppendLine($"DELETE FROM {dependentTable.Name} WHERE {dependentKeyColumn} = '{keyValue}';");
+
+            // Recursively traverse dependencies of the dependent table
+            TraverseDependencies(dependentTable, dependentKeyColumn, keyValue, deleteScripts);
+        }
+    }
+}
