@@ -1,0 +1,30 @@
+import { Component, OnInit, OnDestroy } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent implements OnInit, OnDestroy {
+  errorMessages: string[] = [];
+  private originalConsoleError: any;
+
+  ngOnInit(): void {
+    // Capture the original console.error method
+    this.originalConsoleError = console.error;
+
+    // Override console.error to capture error messages
+    console.error = (...args: any[]) => {
+      const message = args.join(' ');
+      this.errorMessages.push(message);
+      
+      // Call the original console.error so it still logs to the browser console
+      this.originalConsoleError.apply(console, args);
+    };
+  }
+
+  ngOnDestroy(): void {
+    // Restore the original console.error method to avoid side effects
+    console.error = this.originalConsoleError;
+  }
+}
