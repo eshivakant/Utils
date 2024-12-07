@@ -1,0 +1,8 @@
+const enumToIdNameArray = (enumeration: object): { id: number; name: string }[] => {
+  return Object.entries(enumeration)
+    .filter(([key, value]) => typeof value === "number") // Filter out the reverse mappings (keys that are strings)
+    .map(([key, value]) => ({
+      id: value as number,
+      name: key,
+    }));
+};
