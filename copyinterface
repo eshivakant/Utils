@@ -1,0 +1,45 @@
+interface IEmployee {
+  id: number;
+  name: string;
+  age: number;
+  department: string;
+  // Add other properties here...
+}
+
+class Employee {
+  id: number;
+  name: string;
+  age: number;
+  department: string;
+  extraInfo: string;
+
+  constructor(id: number, name: string, age: number, department: string, extraInfo: string) {
+    this.id = id;
+    this.name = name;
+    this.age = age;
+    this.department = department;
+    this.extraInfo = extraInfo;
+  }
+}
+
+function mapEmployeesToIEmployees<T, U>(source: T[], keys: (keyof U)[]): U[] {
+  return source.map((item) =>
+    keys.reduce((obj, key) => {
+      obj[key] = item[key];
+      return obj;
+    }, {} as U)
+  );
+}
+
+// Example usage
+const employees: Employee[] = [
+  new Employee(1, "John Doe", 30, "HR", "extra data 1"),
+  new Employee(2, "Jane Smith", 25, "Finance", "extra data 2"),
+];
+
+// Automatically get keys of IEmployee
+const iEmployeeKeys = Object.keys({} as IEmployee) as (keyof IEmployee)[];
+
+const iEmployees: IEmployee[] = mapEmployeesToIEmployees(employees, iEmployeeKeys);
+
+console.log(iEmployees);
