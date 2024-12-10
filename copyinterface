@@ -22,7 +22,10 @@ class Employee {
   }
 }
 
-function mapEmployeesToIEmployees<T, U>(source: T[], keys: (keyof U)[]): U[] {
+function mapEmployeesToIEmployees<T extends Record<keyof U, any>, U>(
+  source: T[],
+  keys: (keyof U)[]
+): U[] {
   return source.map((item) =>
     keys.reduce((obj, key) => {
       obj[key] = item[key];
